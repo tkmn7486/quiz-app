@@ -66,7 +66,7 @@ export default {
     let QP_view = ref("block")
     let CP_view = ref()
 
-    // 回答ボタン
+    // 選択肢・正解・問題文
     let answer1 = ref()
     let answer2 = ref()
     let answer3 = ref()
@@ -75,7 +75,7 @@ export default {
     let q_sentence = ref()
 
     // 音源再生
-    const PlaySound=()=>{
+    const PlaySound_TF=()=>{
       if(result_answer.value == "正解！"){
         let music = new Audio(require('../assets/sound/true.mp3'));
         music.play();
@@ -97,19 +97,39 @@ export default {
     const choice_ans=(choice)=>{
       if(choice == r_ans.value){
         result_answer.value = "正解！";
-        PlaySound();
+        change_view(QP_view, "none", "block");
+        change_view(CP_view, "none", "block");
+        PlaySound_TF();
         amount_corrects.value++
-        console.log("正解",result_answer.value);
       }else{
         result_answer.value = "不正解…";
-        PlaySound();
-        console.log("不正解",result_answer.value);
+        change_view(QP_view, "none", "block");
+        change_view(CP_view, "none", "block");
+        PlaySound_TF();
       }
     }
 
+    const change_view=(view, dis1, dis2)=>{
+      if(view.value == dis1){
+        view.value = dis2;
+      }else{
+        view.value = dis1;
+      }
+    }
+
+    const finish_quiz=()=>{
+      console.log("クイズ終了");
+    }
+
     const next_question=()=>{
-      count.value++
-      load_question();
+      if(count.value < questions_data.value.length-1){
+        count.value++
+        load_question();
+        change_view(QP_view, "none", "block");
+        change_view(CP_view, "none", "block");
+      }else{
+        finish_quiz();
+      }
     }
 
     return{
@@ -127,9 +147,10 @@ export default {
       q_sentence,
 
       load_question,
-      PlaySound,
+      PlaySound_TF,
       choice_ans,
       next_question,
+      change_view,
     }
   }
 }
