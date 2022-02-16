@@ -1,10 +1,17 @@
 <template>
   <div class="home">
-    <div class="title">
+    <!-- タイトル画面 -->
+    <div class="title" :style="{display:title_view}">
       <h1>なんでもクイズ</h1>
-      <button @click="load_question">問題表示</button>
-      <button>CSV読み込み</button>
+      <button @click="start_quiz">スタート</button>
+      <button>問題集選択</button>
     </div>
+
+    <!-- 問題選択画面 -->
+    <div class="select_questions">
+
+    </div>
+
     <!-- 問題表示画面 -->
     <div class="question_page" :style="{display:QP_view}">
       <p class="question_type">ジャンル：一般常識</p>
@@ -36,7 +43,6 @@
     <div class="commentary_page">
       <div class="result_title">
         <h2>{{result_answer}}</h2>
-        <p>aa</p>
         <button @click="next_question">次の問題</button>
       </div>
     </div>
@@ -63,8 +69,9 @@ export default {
     let count = ref(0)
 
     // 画面表示管理
-    let QP_view = ref("block")
-    let CP_view = ref()
+    let title_view = ref("block")
+    let QP_view = ref("none")
+    let CP_view = ref("none")
 
     // 選択肢・正解・問題文
     let answer1 = ref()
@@ -83,6 +90,12 @@ export default {
         let music = new Audio(require('../assets/sound/false.mp3'));
         music.play();
       }
+    }
+
+    const start_quiz=()=>{
+      change_view(title_view,"none","block")
+      change_view(QP_view,"none","block")
+      load_question()
     }
 
     const load_question=()=>{
@@ -137,6 +150,7 @@ export default {
       count,
       amount_corrects,
       result_answer,
+      title_view,
       QP_view,
       CP_view,
       answer1,
@@ -146,6 +160,7 @@ export default {
       r_ans,
       q_sentence,
 
+      start_quiz,
       load_question,
       PlaySound_TF,
       choice_ans,
