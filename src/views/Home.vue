@@ -4,12 +4,12 @@
     <div class="title" :style="{display:title_view}">
       <h1>なんでもクイズ</h1>
       <button @click="start_quiz">スタート</button>
-      <button>問題集選択</button>
+      <button @click="select_question">問題集選択</button>
     </div>
 
     <!-- 問題選択画面 -->
-    <div class="select_questions">
-
+    <div class="select_questions" :style="{display:selecter_view}">
+      <input type="file" @change="fileChange" id="file_input_expense">
     </div>
 
     <!-- 問題表示画面 -->
@@ -70,6 +70,7 @@ export default {
 
     // 画面表示管理
     let title_view = ref("block")
+    let selecter_view = ref("none")
     let QP_view = ref("none")
     let CP_view = ref("none")
 
@@ -96,6 +97,10 @@ export default {
       change_view(title_view,"none","block")
       change_view(QP_view,"none","block")
       load_question()
+    }
+
+    const select_question=()=>{
+      change_view(selecter_view, "none", "block")
     }
 
     const load_question=()=>{
@@ -145,12 +150,94 @@ export default {
       }
     }
 
+    // CSV関連
+    const json2csv=(json)=> {
+      var header = Object.keys(json[0]).join(',') + "\n";
+
+      var body = json.map(function(d){
+          return Object.keys(d).map(function(key) {
+              return d[key];
+          }).join(',');
+      }).join("\n");
+
+      return header + body;
+    }
+
+    const fileChange=(e)=> {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.readAsText(file, 'Shift_JIS');
+      // const CSVs = [];
+
+      const loadFunc = () => {
+        const lines = reader.result.split("\n");
+        lines.forEach((element, index) => {
+          if( index === 0 ){ return; }
+          const CSV_data = element.split(",");
+          // if (CSV_data.length != 3) return;
+          const CSV = {
+            question: CSV_data[0],
+            ans1: CSV_data[1],
+            ans2: CSV_data[2],
+            ans3: CSV_data[3],
+            ans4: CSV_data[4],
+            r_ans: CSV_data[5],
+          };
+
+          questions_data.value.push(CSV);
+          // item_list.value = item_list.value.shift;
+          console.log(questions_data.value[0])
+          // item_list.value.delete(1,3)
+          console.log("CSV",CSV)
+        });
+        // this.CSVs = CSVs;
+      };
+      reader.onload = loadFunc;
+      reader.readAsBinaryString(file);
+      console.log("問題データ:",questions_data.value)
+    }
+
+
+    const fileChange_preset=(e)=> {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.readAsText(file, 'Shift_JIS');
+      // const CSVs = [];
+
+      const loadFunc = () => {
+        const lines = reader.result.split("\n");
+        lines.forEach((element, index) => {
+          if( index === 0 ){ return; }
+          const CSV_data = element.split(",");
+          // if (CSV_data.length != 3) return;
+          const CSV = {
+            name: CSV_data[0],
+            price: CSV_data[1],
+            remarks: CSV_data[2],
+            amount: CSV_data[3]
+          };
+
+          questions_data.value.push(CSV);
+          // item_list.value = item_list.value.shift;
+          console.log(questions_data.value[0])
+          // item_list.value.delete(1,3)
+          console.log("CSV",CSV)
+        });
+        // this.CSVs = CSVs;
+      };
+      reader.onload = loadFunc;
+      reader.readAsBinaryString(file);
+      console.log("問題データ:",questions_data.value)
+    }
+
+
     return{
       questions_data,
       count,
       amount_corrects,
       result_answer,
       title_view,
+      selecter_view,
       QP_view,
       CP_view,
       answer1,
@@ -161,11 +248,16 @@ export default {
       q_sentence,
 
       start_quiz,
+      select_question,
       load_question,
       PlaySound_TF,
       choice_ans,
       next_question,
       change_view,
+
+      json2csv,
+      fileChange,
+      fileChange_preset,
     }
   }
 }
