@@ -10,6 +10,7 @@
     <!-- 問題選択画面 -->
     <div class="select_questions" :style="{display:selecter_view}">
       <input type="file" @change="fileChange" id="file_input_expense">
+      <button @click="downloadCSV">テンプレートDL</button>
     </div>
 
     <!-- 問題表示画面 -->
@@ -57,8 +58,6 @@ export default {
     // 問題データ
     let questions_data = ref([
       {question:"「走る」は英語で？",ans1:"run",ans2:"height",ans3:"wait",ans4:"walk", r_ans:"run"},
-      {question:"日本人はどれ？",ans1:"サンチェズ",ans2:"岡村",ans3:"ジョニー",ans4:"キム", r_ans:"岡村"},
-      {question:"「こんにちは」の返しは？",ans1:"さようなら",ans2:"ごめんなさい",ans3:"こんにちは",ans4:"また会いましょう", r_ans:"こんにちは"},
     ])
 
     let amount_corrects = ref()
@@ -96,6 +95,7 @@ export default {
     const start_quiz=()=>{
       change_view(title_view,"none","block")
       change_view(QP_view,"none","block")
+      selecter_view.value = "none"
       load_question()
     }
 
@@ -161,6 +161,47 @@ export default {
       }).join("\n");
 
       return header + body;
+    }
+
+    const getDate=(dateObj)=>{
+      let now_date = dateObj.getFullYear() + '年' + 
+      ('00' + (dateObj.getMonth() + 1)).slice(-2) + '月' + 
+      ('00' + dateObj.getDate()).slice(-2) + '日' + 
+      ('00' + dateObj.getHours()).slice(-2) + '時' + 
+      ('00' + dateObj.getMinutes()).slice(-2) + '分';
+      return now_date;
+    }
+
+    const downloadCSV=()=> {
+        //ダウンロードするCSVファイル名を指定する
+        let dateObj = new Date()
+        let now_date = getDate(dateObj);
+        const filename = now_date+".csv";
+        //CSVデータ
+        const data = json2csv(questions_data.value);
+        //BOMを付与する（Excelでの文字化け対策）
+        const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
+        //Blobでデータを作成する
+        const blob = new Blob([bom, data], { type: "text/csv" });
+
+        //IE10/11用(download属性が機能しないためmsSaveBlobを使用）
+        if (window.navigator.msSaveBlob) {
+            window.navigator.msSaveBlob(blob, filename);
+        //その他ブラウザ
+        } else {
+            //BlobからオブジェクトURLを作成する
+            const url = (window.URL || window.webkitURL).createObjectURL(blob);
+            //ダウンロード用にリンクを作成する
+            const download = document.createElement("a");
+            //リンク先に上記で生成したURLを指定する
+            download.href = url;
+            //download属性にファイル名を指定する
+            download.download = filename;
+            //作成したリンクをクリックしてダウンロードを実行する
+            download.click();
+            //createObjectURLで作成したオブジェクトURLを開放する
+            (window.URL || window.webkitURL).revokeObjectURL(url);
+        }
     }
 
     const fileChange=(e)=> {
@@ -256,6 +297,8 @@ export default {
       change_view,
 
       json2csv,
+      downloadCSV,
+      getDate,
       fileChange,
       fileChange_preset,
     }
